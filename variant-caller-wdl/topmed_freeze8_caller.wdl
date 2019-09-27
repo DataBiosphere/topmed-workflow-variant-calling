@@ -759,7 +759,7 @@ workflow TopMedVariantCaller {
           # Use the basename of the CRAM file without suffix as an ID
           # The filename at this time consists of the TopMed DNA sample
           # unique identifier of the form NWD123456 followed by a suffix like .realigned.cram
-          tsv_crams_rows.append([base_name_wo_extension, "crams/" + base_name])
+          tsv_crams_rows.append([base_name_wo_extension, cwd + "/examples/crams/" + base_name])
 
       # Symlink the CRAM index files to the Cromwell working dir so the variant
       # caller can find them
