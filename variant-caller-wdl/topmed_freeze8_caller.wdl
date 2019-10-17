@@ -52,15 +52,6 @@ workflow TopMedVariantCaller {
 
       String variantCallerHomePath =  "/topmed_variant_calling"
 
-      Int ExpandRefBlob_preemptible_tries = 3
-      Int ExpandRefBlob_maxretries_tries = 3
-      Int ExpandRefBlob_memory = 100
-      Int ExpandRefBlob_CPUs = 1
-      # Glob reference files and the REF_PATH md5 sums
-      # e.g.:resources/ref/md5/##/##
-      # https://www.htslib.org/workflow/
-      # https://www.htslib.org/doc/samtools-1.8.html#ENVIRONMENT_VARIABLES
-      String ExpandRefBlob_glob_path = "resources/ref/* resources/ref/md5/**/**/*"
       File referenceFilesBlob
       Array[File] referenceGenomeFilesTarGz = [referenceFilesBlob]
 
@@ -333,19 +324,6 @@ workflow TopMedVariantCaller {
   Array[String] batchedGenotypesTarGzNames = batchedGenotypesTarGzFiles
 
 
-  #Array[Array[File]] batchedInputFilesSet = createBatchedFileSet.outputBatchedFileSet
-  #Array[Array[File]] combinedInputTarGzFilesForMergeAndConsolidateSiteList = [individualCRAMVariantsTarGzFiles, createVbXyIndexTarGzFiles, referenceGenomeFilesTarGz]
-  #Array[File] inputTarGzFilesForMergeAndConsolidateSiteList = flatten(combinedInputTarGzFilesForMergeAndConsolidateSiteList)
-
-
-
-
-
-
-
-
-
-
   if (dynamically_calculate_disk_requirement) {
       # Use scatter to get the size of each CRAI file:
       # Add 1 GB to size in case size is less than 1 GB
@@ -364,7 +342,6 @@ workflow TopMedVariantCaller {
       }
   }
   Float genotype_files_size = select_first([sum_genotype_file_sizes.total_size, All_CRAIs_disk_size_override])
-
 
 
   # We have to use a trick to make Cromwell
