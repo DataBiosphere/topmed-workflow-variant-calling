@@ -1,0 +1,9 @@
+{
+  "TopMedVariantCaller.input_cram_files": [
+  "gs://topmed_workflow_testing/topmed_variant_caller/input_files/NWD119836.recab.cram",
+  "gs://topmed_workflow_testing/topmed_variant_caller/input_files/NWD176325.recab.cram",
+  "gs://topmed_workflow_testing/topmed_variant_caller/input_files/NWD759405.recab.cram"
+  ],
+  "TopMedVariantCaller.referenceFilesBlob": "gs://topmed_workflow_testing/topmed_variant_caller/reference_files/topmed_variant_calling_example_resources.tar.gz"
+}
+
