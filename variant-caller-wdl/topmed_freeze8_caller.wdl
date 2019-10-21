@@ -559,13 +559,13 @@ workflow TopMedVariantCaller {
     }
 
     command <<<
-    python -c "print ~{sep="+" file_sizes}"
+    python -c "print(~{sep="+" file_sizes})"
     >>>
     output {
       Float total_size = read_float(stdout())
     }
     runtime {
-      docker: "python:2.7"
+      docker: "python:3.5"
       preemptible: preemptible_tries
       maxRetries: max_retries
       memory: ceil(memory) + " GB"
