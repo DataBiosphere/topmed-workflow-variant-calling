@@ -57,7 +57,6 @@ workflow TopMedVariantCaller {
 
       Array[File]? input_crai_files
       Array[File] input_cram_files
-      #Array[String] input_cram_files_names = input_cram_files
 
       String docker_image = "statgen/topmed-variant-calling:v8.0.4"
 
@@ -74,7 +73,6 @@ workflow TopMedVariantCaller {
       Int batchSize = 20
     }
 
-  Array[String] input_cram_files_names = input_cram_files
 
 
   Float reference_size = if (dynamically_calculate_disk_requirement) then size(referenceFilesBlob, "GB") * 3
@@ -84,6 +82,7 @@ workflow TopMedVariantCaller {
       # Use scatter to get the size of each CRAM file:
       # Add 1 GB to size in case size is less than 1 GB
       # Use an array of String instead of File so Cromwell doesn't try to download them
+      Array[String] input_cram_files_names = input_cram_files
       scatter(cram_file in input_cram_files_names ) { Float cram_file_size = round(size(cram_file, "GB")) + 1 }
       # Gather the sizes of the CRAM files:
       Array[Float] cram_file_sizes = cram_file_size
@@ -193,7 +192,7 @@ workflow TopMedVariantCaller {
           inputTarGzFiles = individualCRAMVariantsTarGzFiles,
           outputTarGzPath = "out/index/list.107.local.crams.vb_xy.index",
 
-          input_cram_files_names = input_cram_files_names,
+          input_cram_files_names = input_cram_files,
           batchSize = batchSize,
 
           variantCallerHomePath = variantCallerHomePath,
@@ -212,7 +211,7 @@ workflow TopMedVariantCaller {
 
   call createBatchedFileSet {
       input:
-        input_cram_files_names = input_cram_files_names,
+        input_cram_files_names = input_cram_files,
 
         inputTarGzFiles = createVbXyIndexTarGzFiles,
         batchSize = batchSize,
@@ -244,7 +243,7 @@ workflow TopMedVariantCaller {
           inputTarGzFiles = inputTarGzFilesForMergeAndConsolidateSiteList,
           outputTarGzPath =  "out/union",
 
-          input_cram_files_names = input_cram_files_names,
+          input_cram_files_names = input_cram_files,
           batchSize = batchSize,
 
           seqOfBatchNumbersFile = createBatchedFileSet.seqOfBatchNumbersFile,
@@ -307,7 +306,7 @@ workflow TopMedVariantCaller {
 
           input_crais = input_crai_files,
           input_crams = batchOfCRAMFiles,
-          input_cram_files_names = input_cram_files_names,
+          input_cram_files_names = input_cram_files,
 
           batchNumber = cram_files_set_index + 1,
           batchSize = batchSize,
@@ -383,7 +382,7 @@ workflow TopMedVariantCaller {
           outputTarGzPath =  "out/svm out/milk",
 
 
-          input_cram_files_names = input_cram_files_names,
+          input_cram_files_names = input_cram_files,
           batchSize = batchSize,
           seqOfBatchNumbersFile = createBatchedFileSet.seqOfBatchNumbersFile,
 
