@@ -57,7 +57,7 @@ workflow TopMedVariantCaller {
 
       Array[File]? input_crai_files
       Array[File] input_cram_files
-      Array[String] input_cram_files_names = input_cram_files
+      #Array[String] input_cram_files_names = input_cram_files
 
       String docker_image = "statgen/topmed-variant-calling:v8.0.4"
 
@@ -73,6 +73,9 @@ workflow TopMedVariantCaller {
       # task where each CRAM is processed on a single VM via a scatter
       Int batchSize = 20
     }
+
+  Array[String] input_cram_files_names = input_cram_files
+
 
   Float reference_size = if (dynamically_calculate_disk_requirement) then size(referenceFilesBlob, "GB") * 3
   else ReferenceGenome_disk_size_override
