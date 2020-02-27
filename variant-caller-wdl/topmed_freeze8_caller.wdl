@@ -223,7 +223,7 @@ workflow TopMedVariantCaller {
         memory = SumFileSizes_memory,
         docker_image = docker_image
   }
-  Array[Array[File]] batchedInputFilesSet = createBatchedFileSet.outputBatchedFileSet
+  Array[Array[String]] batchedInputFilesSet = createBatchedFileSet.outputBatchedFileSet
 
 
 
@@ -276,7 +276,7 @@ workflow TopMedVariantCaller {
 
   Array[Int] input_cram_range = range(length(batchedInputFilesSet))
   scatter(cram_files_set_index in input_cram_range) {
-      Array[File] batchOfCRAMFiles = batchedInputFilesSet[cram_files_set_index]
+      Array[String] batchOfCRAMFiles = batchedInputFilesSet[cram_files_set_index]
 
       if (dynamically_calculate_disk_requirement) {
           #Use scatter to get the size of each CRAM file:
@@ -532,7 +532,7 @@ workflow TopMedVariantCaller {
 
      >>>
         output {
-          Array[Array[File]] outputBatchedFileSet = read_tsv("batchedInputFileNames.txt")
+          Array[Array[String]] outputBatchedFileSet = read_tsv("batchedInputFileNames.txt")
           File seqOfBatchNumbersFile = "seq.batches.by.20.txt"
        }
       runtime {
