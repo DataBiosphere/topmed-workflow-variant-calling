@@ -706,21 +706,12 @@ workflow TopMedVariantCaller {
 
       # Symlink the CRAM files to the Cromwell working dir so the variant
       # caller can find them
-      #input_crams_file_names_string = "~{ sep=' ' input_crams }"
-      #input_crams_file_names_list = input_crams_file_names_string.split()
-      #print("variantCalling: Input CRAM files list is {}".format(input_crams_file_names_list))
-      #for cram_file in input_crams_file_names_list:
-      #      cram_file_basename = os.path.basename(cram_file)
-      #      print("variantCalling: Creating symlink {} for CRAM file {}".format("examples/crams/" + cram_file_basename, cram_file))
-      #      os.symlink(cram_file, "examples/crams/" + cram_file_basename)
-      #      # If no CRAI files were input then create the CRAM index file
-      #      if (not input_crais_file_names_string):
-      #          crai_file = cwd + "/examples/crams/" + cram_file_basename + ".crai"
-      #          print("Creating index {} for {}".format(crai_file, "examples/crams/" + cram_file_basename))
-      #          subprocess.run(["~{variantCallerHomePath}/samtools/samtools", "index", "examples/crams/" + cram_file_basename, crai_file])
       input_crams_files_string = "~{ sep=' ' input_crams }"
       input_crams_files_list = input_crams_files_string.split()
       print("variantCalling: Input CRAM files list is {}".format(input_crams_files_list))
+      # Use the cram file name string to create the symlink 
+      # as this will be the DRS URI when DRS URIs are used in Terra.
+      # The basename of the DRS URI is what is used in the list.107.local.crams.index
       for cram_file, cram_file_name in zip(input_crams_files_list, input_crams_file_names_list):
             cram_file_basename = os.path.basename(cram_file_name)
             print("variantCalling: Creating symlink {} for CRAM file {}".format("examples/crams/" + cram_file_basename, cram_file))
