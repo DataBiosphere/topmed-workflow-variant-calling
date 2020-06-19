@@ -57,7 +57,6 @@ workflow TopMedVariantCaller {
 
       Array[File]? input_crai_files
       Array[File] input_cram_files
-      Array[String] input_cram_files_names = input_cram_files
 
       String docker_image = "statgen/topmed-variant-calling:v8.0.4"
 
@@ -74,6 +73,8 @@ workflow TopMedVariantCaller {
       Int batchSize = 20
     }
 
+
+
   Float reference_size = if (dynamically_calculate_disk_requirement) then size(referenceFilesBlob, "GB") * 3
   else ReferenceGenome_disk_size_override
 
@@ -81,6 +82,7 @@ workflow TopMedVariantCaller {
       # Use scatter to get the size of each CRAM file:
       # Add 1 GB to size in case size is less than 1 GB
       # Use an array of String instead of File so Cromwell doesn't try to download them
+      Array[String] input_cram_files_names = input_cram_files
       scatter(cram_file in input_cram_files_names ) { Float cram_file_size = round(size(cram_file, "GB")) + 1 }
       # Gather the sizes of the CRAM files:
       Array[Float] cram_file_sizes = cram_file_size
@@ -190,7 +192,7 @@ workflow TopMedVariantCaller {
           inputTarGzFiles = individualCRAMVariantsTarGzFiles,
           outputTarGzPath = "out/index/list.107.local.crams.vb_xy.index",
 
-          input_cram_files_names = input_cram_files_names,
+          input_cram_files_names = input_cram_files,
           batchSize = batchSize,
 
           variantCallerHomePath = variantCallerHomePath,
@@ -209,7 +211,7 @@ workflow TopMedVariantCaller {
 
   call createBatchedFileSet {
       input:
-        input_cram_files_names = input_cram_files_names,
+        input_cram_files_names = input_cram_files,
 
         inputTarGzFiles = createVbXyIndexTarGzFiles,
         batchSize = batchSize,
@@ -221,7 +223,7 @@ workflow TopMedVariantCaller {
         memory = SumFileSizes_memory,
         docker_image = docker_image
   }
-  Array[Array[File]] batchedInputFilesSet = createBatchedFileSet.outputBatchedFileSet
+  Array[Array[String]] batchedInputFilesSet = createBatchedFileSet.outputBatchedFileSet
 
 
 
@@ -241,7 +243,7 @@ workflow TopMedVariantCaller {
           inputTarGzFiles = inputTarGzFilesForMergeAndConsolidateSiteList,
           outputTarGzPath =  "out/union",
 
-          input_cram_files_names = input_cram_files_names,
+          input_cram_files_names = input_cram_files,
           batchSize = batchSize,
 
           seqOfBatchNumbersFile = createBatchedFileSet.seqOfBatchNumbersFile,
@@ -274,7 +276,7 @@ workflow TopMedVariantCaller {
 
   Array[Int] input_cram_range = range(length(batchedInputFilesSet))
   scatter(cram_files_set_index in input_cram_range) {
-      Array[File] batchOfCRAMFiles = batchedInputFilesSet[cram_files_set_index]
+      Array[String] batchOfCRAMFiles = batchedInputFilesSet[cram_files_set_index]
 
       if (dynamically_calculate_disk_requirement) {
           #Use scatter to get the size of each CRAM file:
@@ -304,7 +306,7 @@ workflow TopMedVariantCaller {
 
           input_crais = input_crai_files,
           input_crams = batchOfCRAMFiles,
-          input_cram_files_names = input_cram_files_names,
+          input_cram_files_names = input_cram_files,
 
           batchNumber = cram_files_set_index + 1,
           batchSize = batchSize,
@@ -380,7 +382,7 @@ workflow TopMedVariantCaller {
           outputTarGzPath =  "out/svm out/milk",
 
 
-          input_cram_files_names = input_cram_files_names,
+          input_cram_files_names = input_cram_files,
           batchSize = batchSize,
           seqOfBatchNumbersFile = createBatchedFileSet.seqOfBatchNumbersFile,
 
@@ -530,7 +532,7 @@ workflow TopMedVariantCaller {
 
      >>>
         output {
-          Array[Array[File]] outputBatchedFileSet = read_tsv("batchedInputFileNames.txt")
+          Array[Array[String]] outputBatchedFileSet = read_tsv("batchedInputFileNames.txt")
           File seqOfBatchNumbersFile = "seq.batches.by.20.txt"
        }
       runtime {
@@ -704,11 +706,14 @@ workflow TopMedVariantCaller {
 
       # Symlink the CRAM files to the Cromwell working dir so the variant
       # caller can find them
-      input_crams_file_names_string = "~{ sep=' ' input_crams }"
-      input_crams_file_names_list = input_crams_file_names_string.split()
-      print("variantCalling: Input CRAM files list is {}".format(input_crams_file_names_list))
-      for cram_file in input_crams_file_names_list:
-            cram_file_basename = os.path.basename(cram_file)
+      input_crams_files_string = "~{ sep=' ' input_crams }"
+      input_crams_files_list = input_crams_files_string.split()
+      print("variantCalling: Input CRAM files list is {}".format(input_crams_files_list))
+      # Use the cram file name string to create the symlink 
+      # as this will be the DRS URI when DRS URIs are used in Terra.
+      # The basename of the DRS URI is what is used in the list.107.local.crams.index
+      for cram_file, cram_file_name in zip(input_crams_files_list, input_crams_file_names_list):
+            cram_file_basename = os.path.basename(cram_file_name)
             print("variantCalling: Creating symlink {} for CRAM file {}".format("examples/crams/" + cram_file_basename, cram_file))
             os.symlink(cram_file, "examples/crams/" + cram_file_basename)
             # If no CRAI files were input then create the CRAM index file
