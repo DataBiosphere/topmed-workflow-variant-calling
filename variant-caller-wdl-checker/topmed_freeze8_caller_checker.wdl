@@ -1,6 +1,6 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/DataBiosphere/topmed-workflow-variant-calling/1.0.1/variant-caller-wdl/topmed_freeze8_caller.wdl" as TopMed_variantcaller
+import "https://raw.githubusercontent.com/DataBiosphere/topmed-workflow-variant-calling/1.0.3/variant-caller-wdl/topmed_freeze8_caller.wdl" as TopMed_variantcaller
 
 
 workflow checkerWorkflow {
